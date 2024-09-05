@@ -1,0 +1,2 @@
+pytango==9.3.2
+PyMySQL==1.1.1
