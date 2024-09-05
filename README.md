@@ -1,4 +1,4 @@
-# tango-mqtt
+# tango-mysql
 
 scadawire/tango-controls integration to MariaDB / Mysql Servers
 
