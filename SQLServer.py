@@ -157,9 +157,9 @@ class Mysql(Device, metaclass=DeviceMeta):
     def sqlRead(self, name):
         select = "SELECT `:COL:` as field FROM `:TABLE:` WHERE :WHERE: LIMIT 1;"
         parts = self.dynamicAttributeSqlLookup[name].split(",")
-        update = update.replace(":TABLE:", parts[0])
-        update = update.replace(":COL:", parts[1])
-        update = update.replace(":WHERE:", parts[2])
+        select = select.replace(":TABLE:", parts[0])
+        select = select.replace(":COL:", parts[1])
+        select = select.replace(":WHERE:", parts[2])
         self.cursor.execute(select)
         result = self.cursor.fetchone()
         return result.field
