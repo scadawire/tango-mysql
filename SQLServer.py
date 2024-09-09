@@ -156,7 +156,7 @@ class Mysql(Device, metaclass=DeviceMeta):
     
     def sqlRead(self, name):
         select = "SELECT `:COL:` as field FROM `:TABLE:` WHERE :WHERE: LIMIT 1;"
-        parts = dynamicAttributeSqlLookup[name].split(",")
+        parts = self.dynamicAttributeSqlLookup[name].split(",")
         update = update.replace(":TABLE:", parts[0])
         update = update.replace(":COL:", parts[1])
         update = update.replace(":WHERE:", parts[2])
@@ -166,7 +166,7 @@ class Mysql(Device, metaclass=DeviceMeta):
         
     def sqlWrite(self, name, value):
         update = "UPDATE `:TABLE:` SET `:COL:` = :VALUE: WHERE :WHERE: LIMIT 1;"
-        parts = dynamicAttributeSqlLookup[name].split(",")
+        parts = self.dynamicAttributeSqlLookup[name].split(",")
         update = update.replace(":TABLE:", parts[0])
         update = update.replace(":COL:", parts[1])
         update = update.replace(":WHERE:", parts[2])
