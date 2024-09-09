@@ -19,6 +19,7 @@ class Mysql(Device, metaclass=DeviceMeta):
     init_dynamic_attributes = device_property(dtype=str, default_value="")
     dynamicAttributes = {}
     dynamicAttributeValueTypes = {}
+    dynamicAttributeSqlLookup = {}
     last_connect = 0
     connection = 0
     cursor = 0
@@ -66,7 +67,8 @@ class Mysql(Device, metaclass=DeviceMeta):
                 for attributeData in attributes:
                     self.add_dynamic_attribute(attributeData["name"], 
                         attributeData.get("data_type", ""), attributeData.get("min_value", ""), attributeData.get("max_value", ""),
-                        attributeData.get("unit", ""), attributeData.get("write_type", ""), attributeData.get("label", ""))
+                        attributeData.get("unit", ""), attributeData.get("write_type", ""), attributeData.get("label", ""),
+                        attributeData.get("modifier", ""))
             except JSONDecodeError as e:
                 attributes = self.init_dynamic_attributes.split(",")
                 for attribute in attributes:
@@ -76,12 +78,13 @@ class Mysql(Device, metaclass=DeviceMeta):
     @command(dtype_in=str)
     def add_dynamic_attribute(self, topic, 
             variable_type_name="DevString", min_value="", max_value="",
-            unit="", write_type_name="", label=""):
+            unit="", write_type_name="", label="", modifier=""):
         if topic == "": return
         prop = UserDefaultAttrProp()
         variableType = self.stringValueToVarType(variable_type_name)
         writeType = self.stringValueToWriteType(write_type_name)
         self.dynamicAttributeValueTypes[topic] = variableType
+        self.dynamicAttributeSqlLookup[topic] = modifier
         if(min_value != "" and min_value != max_value): 
             prop.set_min_value(min_value)
         if(max_value != "" and min_value != max_value): 
@@ -153,7 +156,7 @@ class Mysql(Device, metaclass=DeviceMeta):
     
     def sqlRead(self, name):
         select = "SELECT `:COL:` as field FROM `:TABLE:` WHERE :WHERE: LIMIT 1;"
-        parts = name.split(",")
+        parts = dynamicAttributeSqlLookup[name].split(",")
         update = update.replace(":TABLE:", parts[0])
         update = update.replace(":COL:", parts[1])
         update = update.replace(":WHERE:", parts[2])
@@ -163,7 +166,7 @@ class Mysql(Device, metaclass=DeviceMeta):
         
     def sqlWrite(self, name, value):
         update = "UPDATE `:TABLE:` SET `:COL:` = :VALUE: WHERE :WHERE: LIMIT 1;"
-        parts = name.split(",")
+        parts = dynamicAttributeSqlLookup[name].split(",")
         update = update.replace(":TABLE:", parts[0])
         update = update.replace(":COL:", parts[1])
         update = update.replace(":WHERE:", parts[2])
