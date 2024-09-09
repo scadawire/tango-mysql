@@ -162,7 +162,7 @@ class Mysql(Device, metaclass=DeviceMeta):
         select = select.replace(":WHERE:", parts[2])
         self.cursor.execute(select)
         result = self.cursor.fetchone()
-        return result.field
+        return result['field'] if result else ""
         
     def sqlWrite(self, name, value):
         update = "UPDATE `:TABLE:` SET `:COL:` = :VALUE: WHERE :WHERE: LIMIT 1;"
