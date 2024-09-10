@@ -153,14 +153,15 @@ class Mysql(Device, metaclass=DeviceMeta):
 
     def read_dynamic_attr(self, attr):
         name = attr.get_name()
+        self.debug_stream("read value " + str(name) + ": " + str(value))
         self.dynamicAttributes[name] = self.sqlRead(name)
         value = self.dynamicAttributes[name]
-        self.debug_stream("read value " + str(name) + ": " + str(value))
         attr.set_value(self.stringValueToTypeValue(name, value))
 
     def write_dynamic_attr(self, attr):
         value = str(attr.get_write_value())
         name = attr.get_name()
+        self.debug_stream("write value " + str(name) + ": " + str(value))
         self.dynamicAttributes[name] = value
         self.sqlWrite(name, self.dynamicAttributes[name])
     
@@ -185,7 +186,7 @@ class Mysql(Device, metaclass=DeviceMeta):
         update = update.replace(":TABLE:", parts[0])
         update = update.replace(":COL:", parts[1])
         update = update.replace(":WHERE:", parts[2])
-        update = update.replace(":VALUE:", "%s")
+        update = update.replace(":VALUE:", "%%s")
         self.debug_stream(f"Executing update SQL: {update} with value: {value}")
         self.cursor.execute(update, (value))
 
