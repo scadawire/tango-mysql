@@ -186,7 +186,7 @@ class Mysql(Device, metaclass=DeviceMeta):
         update = update.replace(":TABLE:", parts[0])
         update = update.replace(":COL:", parts[1])
         update = update.replace(":WHERE:", parts[2])
-        self.debug_stream(f"Executing update SQL: {update} with value: {value}")
+        self.debug_stream(f"Executing update SQL: {update}", (value))
         self.cursor.execute(update, (value))
 
 if __name__ == "__main__":
