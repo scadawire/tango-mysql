@@ -79,6 +79,7 @@ class Mysql(Device, metaclass=DeviceMeta):
     def add_dynamic_attribute(self, topic, 
             variable_type_name="DevString", min_value="", max_value="",
             unit="", write_type_name="", label="", modifier=""):
+        self.info_stream(f"Adding dynamic attribute : {topic}")
         if topic == "": return
         prop = UserDefaultAttrProp()
         variableType = self.stringValueToVarType(variable_type_name)
@@ -97,6 +98,15 @@ class Mysql(Device, metaclass=DeviceMeta):
         attr.set_default_properties(prop)
         self.add_attribute(attr, r_meth=self.read_dynamic_attr, w_meth=self.write_dynamic_attr)
         self.dynamicAttributes[topic] = ""
+        try:
+            result = self.sqlRead(topic)
+            if result:
+                self.info_stream(f"Attribute {topic} initial SQL read successful, value: {result}")
+            else:
+                self.warning_stream(f"Attribute {topic} returned empty result from SQL read.")
+        except Exception as e:
+            self.error_stream(f"Error reading attribute {topic} from database: {str(e)}")
+
 
     def stringValueToVarType(self, variable_type_name) -> CmdArgType:
         if(variable_type_name == "DevBoolean"):
@@ -156,10 +166,15 @@ class Mysql(Device, metaclass=DeviceMeta):
     
     def sqlRead(self, name):
         select = "SELECT `:COL:` as field FROM `:TABLE:` WHERE :WHERE: LIMIT 1;"
-        parts = self.dynamicAttributeSqlLookup[name].split(",")
+        lookup = self.dynamicAttributeSqlLookup[name]
+        parts = lookup.split(",")
+        if len(parts) != 3:
+            raise ValueError(f"Invalid SQL parts for {name}. Modifier expected to contain 3 comma separated values (table_name,column_name,where_part), got: {lookup}")
+
         select = select.replace(":TABLE:", parts[0])
         select = select.replace(":COL:", parts[1])
         select = select.replace(":WHERE:", parts[2])
+        self.debug_stream(f"Executing select SQL: {select}")
         self.cursor.execute(select)
         result = self.cursor.fetchone()
         return result['field'] if result else ""
@@ -171,6 +186,7 @@ class Mysql(Device, metaclass=DeviceMeta):
         update = update.replace(":COL:", parts[1])
         update = update.replace(":WHERE:", parts[2])
         update = update.replace(":VALUE:", "%s")
+        self.debug_stream(f"Executing update SQL: {update} with value: {value}")
         self.cursor.execute(update, (value))
 
 if __name__ == "__main__":
