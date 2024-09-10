@@ -25,11 +25,11 @@ class Mysql(Device, metaclass=DeviceMeta):
     cursor = 0
     
     def connect(self,rethrow=False):
-        print("In %s.connect()"%self.get_name())
+        self.info_stream(f"Connecting to database")
         self.last_connect = time.time()
         try:
             self.connection.close()
-            print('Connection to %s.%s closed'%(self.host,self.database))
+            self.info_stream(f"Closed already present connection")
         except: pass
 
         try:
@@ -42,22 +42,19 @@ class Mysql(Device, metaclass=DeviceMeta):
                 autocommit=True,
                 cursorclass=pymysql.cursors.DictCursor)
             self.cursor = self.connection.cursor()
-            print('%s connected to %s@%s'%(self.get_name(),self.database,self.host))
+            self.info_stream(f"Connected to {self.host} - {self.database}")
             return True
 
         except Exception as e:
-            print('Error in %s.connect()'%self.get_name())
-            print(traceback.format_exc())
+            self.error_stream(f"Error in connect")
+            self.error_stream(traceback.format_exc())
             self.last_error = str(e)
             self.connection = self.cursor = None
             if rethrow: raise e
             return False
 
     def init_device(self):
-        print("In ", self.get_name(), "::init_device()")
         self.set_state(DevState.INIT)
-
-        #Reloading properties
         self.get_device_properties(self.get_device_class())
         self.last_connect,self.last_update,self.last_error = 0,0,''
         self.connect()
@@ -74,7 +71,8 @@ class Mysql(Device, metaclass=DeviceMeta):
                 for attribute in attributes:
                     self.info_stream("Init dynamic attribute: " + str(attribute.strip()))
                     self.add_dynamic_attribute(attribute.strip())
-    
+        self.set_state(DevState.ON)
+
     @command(dtype_in=str)
     def add_dynamic_attribute(self, topic, 
             variable_type_name="DevString", min_value="", max_value="",
@@ -153,9 +151,9 @@ class Mysql(Device, metaclass=DeviceMeta):
 
     def read_dynamic_attr(self, attr):
         name = attr.get_name()
-        self.debug_stream("read value " + str(name) + ": " + str(value))
         self.dynamicAttributes[name] = self.sqlRead(name)
         value = self.dynamicAttributes[name]
+        self.debug_stream("read value " + str(name) + ": " + str(value))
         attr.set_value(self.stringValueToTypeValue(name, value))
 
     def write_dynamic_attr(self, attr):
