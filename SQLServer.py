@@ -181,12 +181,11 @@ class Mysql(Device, metaclass=DeviceMeta):
         return result['field'] if result else ""
         
     def sqlWrite(self, name, value):
-        update = "UPDATE `:TABLE:` SET `:COL:` = :VALUE: WHERE :WHERE: LIMIT 1;"
+        update = "UPDATE `:TABLE:` SET `:COL:` = %s WHERE :WHERE: LIMIT 1;"
         parts = self.dynamicAttributeSqlLookup[name].split(",")
         update = update.replace(":TABLE:", parts[0])
         update = update.replace(":COL:", parts[1])
         update = update.replace(":WHERE:", parts[2])
-        update = update.replace(":VALUE:", "%%s")
         self.debug_stream(f"Executing update SQL: {update} with value: {value}")
         self.cursor.execute(update, (value))
 
