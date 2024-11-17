@@ -17,6 +17,7 @@ class Mysql(Device, metaclass=DeviceMeta):
     password = device_property(dtype=str, default_value="")
     database = device_property(dtype=str, default_value="")
     init_dynamic_attributes = device_property(dtype=str, default_value="")
+    initial_sql = device_property(dtype=str, default_value="")
     dynamicAttributes = {}
     dynamicAttributeValueTypes = {}
     dynamicAttributeSqlLookup = {}
@@ -58,6 +59,9 @@ class Mysql(Device, metaclass=DeviceMeta):
         self.get_device_properties(self.get_device_class())
         self.last_connect,self.last_update,self.last_error = 0,0,''
         self.connect()
+        if self.initial_sql != "":
+            self.debug_stream(f"Executing initial SQL: {self.initial_sql}")
+            self.cursor.execute(self.initial_sql)
         if self.init_dynamic_attributes != "":
             try:
                 attributes = json.loads(self.init_dynamic_attributes)
