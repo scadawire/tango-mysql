@@ -69,7 +69,8 @@ class Mysql(Device, metaclass=DeviceMeta):
                     self.add_dynamic_attribute(attributeData["name"], 
                         attributeData.get("data_type", ""), attributeData.get("min_value", ""), attributeData.get("max_value", ""),
                         attributeData.get("unit", ""), attributeData.get("write_type", ""), attributeData.get("label", ""),
-                        attributeData.get("modifier", ""))
+                        attributeData.get("modifier", ""), attributeData.get("min_alarm", ""), attributeData.get("max_alarm", ""),
+                        attributeData.get("min_warning", ""), attributeData.get("max_warning", ""))
             except JSONDecodeError as e:
                 attributes = self.init_dynamic_attributes.split(",")
                 for attribute in attributes:
@@ -80,7 +81,8 @@ class Mysql(Device, metaclass=DeviceMeta):
     @command(dtype_in=str)
     def add_dynamic_attribute(self, topic, 
             variable_type_name="DevString", min_value="", max_value="",
-            unit="", write_type_name="", label="", modifier=""):
+            unit="", write_type_name="", label="", modifier="",
+            min_alarm="", max_alarm="", min_warning="", max_warning=""):
         self.info_stream(f"Adding dynamic attribute : {topic}")
         if topic == "": return
         prop = UserDefaultAttrProp()
@@ -88,14 +90,14 @@ class Mysql(Device, metaclass=DeviceMeta):
         writeType = self.stringValueToWriteType(write_type_name)
         self.dynamicAttributeValueTypes[topic] = variableType
         self.dynamicAttributeSqlLookup[topic] = modifier
-        if(min_value != "" and min_value != max_value): 
-            prop.set_min_value(min_value)
-        if(max_value != "" and min_value != max_value): 
-            prop.set_max_value(max_value)
-        if(unit != ""): 
-            prop.set_unit(unit)
-        if(label != ""):
-            prop.set_label(label)
+        if(min_value != "" and min_value != max_value): prop.set_min_value(min_value)
+        if(max_value != "" and min_value != max_value): prop.set_max_value(max_value)
+        if(unit != ""): prop.set_unit(unit)
+        if(label != ""): prop.set_label(label)
+        if(min_alarm != ""): prop.set_min_alarm(min_alarm)
+        if(max_alarm != ""): prop.set_max_alarm(max_alarm)
+        if(min_warning != ""): prop.set_min_warning(min_warning)
+        if(max_warning != ""): prop.set_max_warning(max_warning)
         attr = Attr(topic, variableType, writeType)
         attr.set_default_properties(prop)
         self.add_attribute(attr, r_meth=self.read_dynamic_attr, w_meth=self.write_dynamic_attr)
