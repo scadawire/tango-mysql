@@ -78,8 +78,17 @@ class Mysql(Device, metaclass=DeviceMeta):
                     self.add_dynamic_attribute(attribute.strip())
         self.set_state(DevState.ON)
 
-    @command(dtype_in=str)
-    def add_dynamic_attribute(self, topic, 
+    @command(dtype_in=str, dtype_out=str)
+    def sql(self, configStr):
+        config = json.loads(configStr)
+        sql = config.sql
+        params = config.params
+        self.debug_stream(f"Executing SQL: {sql}")
+        rowsAffected = self.cursor.execute(sql, params)
+        result = self.cursor.fetchall()
+        return json.dumps({"rowsAffected": rowsAffected, "result": result})
+
+    def add_dynamic_attribute(self, topic,
             variable_type_name="DevString", min_value="", max_value="",
             unit="", write_type_name="", label="", modifier="",
             min_alarm="", max_alarm="", min_warning="", max_warning=""):
