@@ -81,8 +81,8 @@ class Mysql(Device, metaclass=DeviceMeta):
     @command(dtype_in=str, dtype_out=str)
     def sql(self, configStr):
         config = json.loads(configStr)
-        sql = config.sql
-        params = config.params
+        sql = config.get("sql")
+        params = config.get("params", [])
         self.debug_stream(f"Executing SQL: {sql}")
         rowsAffected = self.cursor.execute(sql, params)
         result = self.cursor.fetchall()
