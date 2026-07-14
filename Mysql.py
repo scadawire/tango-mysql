@@ -114,9 +114,9 @@ class Mysql(Device, metaclass=DeviceMeta):
         try:
             result = self.sqlRead(topic)
             if result:
-                self.info_stream("Attribute %s initial SQL read successful, value: %s", topic, result)
+                self.debug_stream("Attribute %s initial SQL read successful, value: %s", topic, result)
             else:
-                self.warning_stream("Attribute %s returned empty result from SQL read.", topic)
+                self.warn_stream("Attribute %s returned empty result from SQL read.", topic)
         except Exception as e:
             self.error_stream("Error reading attribute %s from database: %s", topic, str(e))
 
